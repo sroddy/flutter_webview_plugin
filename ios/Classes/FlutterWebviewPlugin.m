@@ -104,12 +104,20 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
         rc = self.viewController.view.bounds;
     }
 
-    self.webview = [[WKWebView alloc] initWithFrame:rc];
+    WKWebViewConfiguration *webConfiguration = [WKWebViewConfiguration new];
+    // Fix Fullscreen mode for video and autoplay
+    webConfiguration.preferences.javaScriptEnabled = YES;
+    webConfiguration.mediaPlaybackRequiresUserAction = NO;
+    webConfiguration.allowsInlineMediaPlayback = YES;
+
+    self.webview = [[WKWebView alloc] initWithFrame:rc configuration:webConfiguration];
     self.webview.navigationDelegate = self;
     self.webview.scrollView.delegate = self;
     self.webview.hidden = [hidden boolValue];
     self.webview.scrollView.showsHorizontalScrollIndicator = [scrollBar boolValue];
     self.webview.scrollView.showsVerticalScrollIndicator = [scrollBar boolValue];
+    self.webview.opaque = NO;
+    self.webview.backgroundColor = UIColor.clearColor;
 
     _enableZoom = [withZoom boolValue];
 
@@ -266,6 +274,8 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    self.webview.opaque = NO;
+    self.webview.backgroundColor = UIColor.clearColor;
     [channel invokeMethod:@"onState" arguments:@{@"type": @"finishLoad", @"url": webView.URL.absoluteString}];
 }
 

@@ -1,6 +1,7 @@
 package com.flutter_webview_plugin;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 import android.annotation.TargetApi;
@@ -223,6 +224,10 @@ class WebviewManager {
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+        }
+
         if (clearCache) {
             clearCache();
         }
@@ -248,6 +253,8 @@ class WebviewManager {
         } else {
             webView.loadUrl(url);
         }
+
+        webView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
     void reloadUrl(String url) {
