@@ -48,4 +48,18 @@ public class BrowserClient extends WebViewClient {
         data.put("code", Integer.toString(errorResponse.getStatusCode()));
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
     }
+
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        boolean isLiveQuizCustomScheme = url.startsWith("lq-");
+        if (isLiveQuizCustomScheme) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("url", url);
+
+            FlutterWebviewPlugin.channel.invokeMethod("onUrlChanged", data);
+            return true;
+        } else {
+            return super.shouldOverrideUrlLoading(view, url);
+        }
+    }
 }

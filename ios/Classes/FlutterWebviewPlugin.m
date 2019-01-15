@@ -3,7 +3,7 @@
 static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 
 // UIWebViewDelegate
-@interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate> {
+@interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler> {
     BOOL _enableAppScheme;
     BOOL _enableZoom;
 }
@@ -109,6 +109,10 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     webConfiguration.preferences.javaScriptEnabled = YES;
     webConfiguration.mediaPlaybackRequiresUserAction = NO;
     webConfiguration.allowsInlineMediaPlayback = YES;
+    // create message handler named "logging"
+    WKUserContentController *ucc = [[WKUserContentController alloc] init];
+    [ucc addScriptMessageHandler:self name:@"logging"];
+    [webConfiguration setUserContentController:ucc];
 
     self.webview = [[WKWebView alloc] initWithFrame:rc configuration:webConfiguration];
     self.webview.navigationDelegate = self;
@@ -277,6 +281,13 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     self.webview.opaque = NO;
     self.webview.backgroundColor = UIColor.clearColor;
     [channel invokeMethod:@"onState" arguments:@{@"type": @"finishLoad", @"url": webView.URL.absoluteString}];
+  
+//  // javascript to override console.log to use messageHandlers.postmessage
+//  NSString * js = @"var console = { log: function(msg){window.webkit.messageHandlers.logging.postMessage(msg) }};";
+//  // evaluate js to wkwebview
+//  [self.webview evaluateJavaScript:js completionHandler:^(id _Nullable something, NSError * _Nullable error) {
+//    NSLog(@"Something: %@", something);
+//  }];
 }
 
 - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
@@ -297,6 +308,11 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     if (scrollView.pinchGestureRecognizer.isEnabled != _enableZoom) {
         scrollView.pinchGestureRecognizer.enabled = _enableZoom;
     }
+}
+
+- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+  // what ever were logged with console.log() in wkwebview arrives here in message.body property
+  NSLog(@"log: %@", message.body);
 }
 
 @end

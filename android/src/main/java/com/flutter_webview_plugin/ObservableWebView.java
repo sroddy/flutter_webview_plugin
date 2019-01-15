@@ -2,6 +2,8 @@ package com.flutter_webview_plugin;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
 
 public class ObservableWebView extends WebView {
@@ -45,5 +47,12 @@ public class ObservableWebView extends WebView {
     public static interface OnScrollChangedCallback
     {
         public void onScroll(int l, int t, int oldl, int oldt);
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        if (visibility == View.VISIBLE) {
+            super.onWindowVisibilityChanged(visibility);
+        }
     }
 }

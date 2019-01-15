@@ -1,6 +1,8 @@
 package com.flutter_webview_plugin;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
@@ -115,6 +117,15 @@ class WebviewManager {
         webView.setWebViewClient(webViewClient);
         webView.setWebChromeClient(new WebChromeClient()
         {
+            @Override
+            public Bitmap getDefaultVideoPoster() {
+                final Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444);
+                Canvas canvas = new Canvas(bitmap);
+                // Use whatever color you want here. You could probably use a transparent color
+                canvas.drawARGB(0, 0, 0, 0);
+                return bitmap;
+            }
+
             //The undocumented magic method override
             //Eclipse will swear at you if you try to put @Override here
             // For Android 3.0+
@@ -172,6 +183,10 @@ class WebviewManager {
                 return true;
             }
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
     }
 
     private void clearCookies() {
