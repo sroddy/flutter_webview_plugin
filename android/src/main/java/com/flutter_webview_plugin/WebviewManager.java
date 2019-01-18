@@ -276,22 +276,15 @@ class WebviewManager {
         webView.loadUrl(url);
     }
 
-    void close(MethodCall call, MethodChannel.Result result) {
+    void close() {
         if (webView != null) {
             ViewGroup vg = (ViewGroup) (webView.getParent());
             vg.removeView(webView);
         }
         webView = null;
-        if (result != null) {
-            result.success(null);
-        }
 
         closed = true;
         FlutterWebviewPlugin.channel.invokeMethod("onDestroy", null);
-    }
-
-    void close() {
-        close(null, null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
