@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -37,6 +38,7 @@ class WebviewManager {
     private ValueCallback<Uri> mUploadMessage;
     private ValueCallback<Uri[]> mUploadMessageArray;
     private final static int FILECHOOSER_RESULTCODE=1;
+    private final static String MESSAGE_HANDLER = "messageHandler";
 
     @TargetApi(7)
     class ResultHandler {
@@ -184,8 +186,17 @@ class WebviewManager {
             }
         });
 
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
+            webView.addJavascriptInterface(new Object() {
+                @JavascriptInterface
+                public void postMessage(String message) {
+                    System.out.println(message);
+                    FlutterWebviewPlugin.channel.invokeMethod("onJsMessage", message);
+                }
+            }, MESSAGE_HANDLER);
         }
     }
 
@@ -278,6 +289,7 @@ class WebviewManager {
 
     void close() {
         if (webView != null) {
+            webView.removeJavascriptInterface(MESSAGE_HANDLER);
             ViewGroup vg = (ViewGroup) (webView.getParent());
             vg.removeView(webView);
         }
