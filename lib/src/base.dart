@@ -26,6 +26,7 @@ class FlutterWebviewPlugin {
   final _onDestroy = StreamController<Null>.broadcast();
   final _onUrlChanged = StreamController<String>.broadcast();
   final _onStateChanged = StreamController<WebViewStateChanged>.broadcast();
+  final _onJsMessage = StreamController<dynamic>.broadcast();
   final _onScrollXChanged = StreamController<double>.broadcast();
   final _onScrollYChanged = StreamController<double>.broadcast();
   final _onHttpError = StreamController<WebViewHttpError>.broadcast();
@@ -51,6 +52,9 @@ class FlutterWebviewPlugin {
           ),
         );
         break;
+      case 'onJsMessage':
+        _onJsMessage.add(call.arguments);
+        break;
       case 'onHttpError':
         _onHttpError.add(WebViewHttpError(call.arguments['code'], call.arguments['url']));
         break;
@@ -67,6 +71,8 @@ class FlutterWebviewPlugin {
   /// content is Map for type: {shouldStart(iOS)|startLoad|finishLoad}
   /// more detail than other events
   Stream<WebViewStateChanged> get onStateChanged => _onStateChanged.stream;
+
+  Stream<dynamic> get onJsMessage => _onJsMessage.stream;
 
   /// Listening web view y position scroll change
   Stream<double> get onScrollYChanged => _onScrollYChanged.stream;
@@ -94,7 +100,8 @@ class FlutterWebviewPlugin {
   /// - [withLocalUrl]: allow url as a local path
   ///     Allow local files on iOs > 9.0
   /// - [scrollBar]: enable or disable scrollbar
-  Future<Null> launch(String url, {
+  Future<Null> launch(
+    String url, {
     Map<String, String> headers,
     bool withJavascript,
     bool clearCache,
@@ -185,6 +192,7 @@ class FlutterWebviewPlugin {
     _onDestroy.close();
     _onUrlChanged.close();
     _onStateChanged.close();
+    _onJsMessage.close();
     _onScrollXChanged.close();
     _onScrollYChanged.close();
     _onHttpError.close();

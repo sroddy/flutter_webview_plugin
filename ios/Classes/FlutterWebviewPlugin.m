@@ -111,7 +111,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     webConfiguration.allowsInlineMediaPlayback = YES;
     // create message handler named "logging"
     WKUserContentController *ucc = [[WKUserContentController alloc] init];
-    [ucc addScriptMessageHandler:self name:@"logging"];
+    [ucc addScriptMessageHandler:self name:@"messageHandler"];
     [webConfiguration setUserContentController:ucc];
 
     self.webview = [[WKWebView alloc] initWithFrame:rc configuration:webConfiguration];
@@ -310,9 +310,9 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     }
 }
 
-- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
-  // what ever were logged with console.log() in wkwebview arrives here in message.body property
-  NSLog(@"log: %@", message.body);
+- (void)userContentController:(nonnull WKUserContentController *)userContentController
+      didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    [channel invokeMethod:@"onJsMessage" arguments:message.body];
 }
 
 @end
