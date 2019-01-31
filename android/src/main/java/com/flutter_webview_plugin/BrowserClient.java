@@ -1,6 +1,7 @@
 package com.flutter_webview_plugin;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -14,9 +15,12 @@ import java.util.Map;
  */
 
 public class BrowserClient extends WebViewClient {
-    public BrowserClient() {
+    public BrowserClient(boolean disableNavigation) {
         super();
+        this.disableNavigation = disableNavigation;
     }
+
+    final boolean disableNavigation;
 
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -53,15 +57,6 @@ public class BrowserClient extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        boolean isLiveQuizCustomScheme = url.startsWith("lq-");
-        if (isLiveQuizCustomScheme) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("url", url);
-
-            FlutterWebviewPlugin.channel.invokeMethod("onUrlChanged", data);
-            return true;
-        } else {
-            return super.shouldOverrideUrlLoading(view, url);
-        }
+        return disableNavigation;
     }
 }

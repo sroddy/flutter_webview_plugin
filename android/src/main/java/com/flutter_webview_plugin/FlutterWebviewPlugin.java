@@ -97,9 +97,10 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
         Map<String, String> headers = call.argument("headers");
         boolean scrollBar = call.argument("scrollBar");
         boolean allowFileURLs = call.argument("allowFileURLs");
+        boolean disableNavigation = call.argument("disableNavigation");
 
         if (webViewManager == null || webViewManager.closed == true) {
-            webViewManager = new WebviewManager(activity);
+            webViewManager = new WebviewManager(activity, disableNavigation);
         }
 
         FrameLayout.LayoutParams params = buildLayoutParams(call);

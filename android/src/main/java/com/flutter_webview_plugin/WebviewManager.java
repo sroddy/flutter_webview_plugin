@@ -81,11 +81,11 @@ class WebviewManager {
     Activity activity;
     ResultHandler resultHandler;
 
-    WebviewManager(final Activity activity) {
+    WebviewManager(final Activity activity, boolean disableNavigation) {
         this.webView = new ObservableWebView(activity);
         this.activity = activity;
         this.resultHandler = new ResultHandler();
-        WebViewClient webViewClient = new BrowserClient();
+        WebViewClient webViewClient = new BrowserClient(disableNavigation);
         webView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
