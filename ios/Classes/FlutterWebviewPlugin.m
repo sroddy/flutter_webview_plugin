@@ -3,11 +3,10 @@
 static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 
 // UIWebViewDelegate
-@interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler> {
+@interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler, WKUIDelegate> {
     BOOL _enableAppScheme;
     BOOL _enableZoom;
     BOOL _disableNavigation;
-    BOOL _isFirstNavigation;
 }
 @end
 
@@ -123,6 +122,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 
     self.webview = [[WKWebView alloc] initWithFrame:rc configuration:webConfiguration];
     self.webview.navigationDelegate = self;
+    self.webview.UIDelegate = self;
     self.webview.scrollView.delegate = self;
     self.webview.hidden = [hidden boolValue];
     self.webview.scrollView.showsHorizontalScrollIndicator = [scrollBar boolValue];
@@ -153,7 +153,6 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 }
 
 - (void)navigate:(FlutterMethodCall*)call {
-    _isFirstNavigation = YES;
     if (self.webview != nil) {
             NSString *url = call.arguments[@"url"];
             NSNumber *withLocalUrl = call.arguments[@"withLocalUrl"];
@@ -254,6 +253,16 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
         }];
 }
 
+- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {
+      NSDictionary *data = @{
+                                @"url": navigationAction.request.URL.absoluteString,
+                                @"willNavigate": @(0),
+                                };
+      [channel invokeMethod:@"onNavigationAttempt" arguments:data];
+
+      return nil;
+}
+
 #pragma mark -- WkWebView Delegate
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
@@ -261,17 +270,6 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
                            @"url": navigationAction.request.URL.absoluteString,
                            @"willNavigate": @(!_disableNavigation),
                            }.mutableCopy;
-
-    if (!_isFirstNavigation) {
-//        [channel invokeMethod:@"onNavigationAttempt" arguments:data];
-//        if (_disableNavigation) {
-//            decisionHandler(WKNavigationActionPolicyCancel);
-//            return;
-//        }
-      NSLog(@"dfv");
-    }
-
-    _isFirstNavigation = NO;
 
     data[@"type"] = @"shouldStart";
     data[@"navigationType"] = @(navigationAction.navigationType);
