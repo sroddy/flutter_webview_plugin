@@ -6,6 +6,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 @interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler> {
     BOOL _enableAppScheme;
     BOOL _enableZoom;
+    BOOL _disableNavigation;
 }
 @end
 
@@ -83,6 +84,11 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     NSString *userAgent = call.arguments[@"userAgent"];
     NSNumber *withZoom = call.arguments[@"withZoom"];
     NSNumber *scrollBar = call.arguments[@"scrollBar"];
+    NSNumber *disableNavigation = call.arguments[@"disableNavigation"];
+
+    if (disableNavigation != nil && disableNavigation != (id)[NSNull null]) {
+      _disableNavigation = disableNavigation.boolValue;
+    }
 
     if (clearCache != (id)[NSNull null] && [clearCache boolValue]) {
         [[NSURLCache sharedURLCache] removeAllCachedResponses];
@@ -249,6 +255,10 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 #pragma mark -- WkWebView Delegate
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if (_disableNavigation) {
+        decisionHandler(WKNavigationActionPolicyCancel);
+        return;
+    }
 
     id data = @{@"url": navigationAction.request.URL.absoluteString,
                 @"type": @"shouldStart",
