@@ -7,6 +7,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     BOOL _enableAppScheme;
     BOOL _enableZoom;
     BOOL _disableNavigation;
+    BOOL _isFirstNavigation;
 }
 @end
 
@@ -152,6 +153,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 }
 
 - (void)navigate:(FlutterMethodCall*)call {
+    _isFirstNavigation = YES;
     if (self.webview != nil) {
             NSString *url = call.arguments[@"url"];
             NSNumber *withLocalUrl = call.arguments[@"withLocalUrl"];
@@ -255,20 +257,25 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 #pragma mark -- WkWebView Delegate
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
-    NSDictionary *data = @{
+    NSMutableDictionary *data = @{
                            @"url": navigationAction.request.URL.absoluteString,
                            @"willNavigate": @(!_disableNavigation),
-                           };
-    [channel invokeMethod:@"onNavigationAttempt" arguments:data];
-    if (_disableNavigation) {
-        decisionHandler(WKNavigationActionPolicyCancel);
-        return;
+                           }.mutableCopy;
+
+    if (!_isFirstNavigation) {
+//        [channel invokeMethod:@"onNavigationAttempt" arguments:data];
+//        if (_disableNavigation) {
+//            decisionHandler(WKNavigationActionPolicyCancel);
+//            return;
+//        }
+      NSLog(@"dfv");
     }
 
-    [data setValuesForKeysWithDictionary:@{
-                                           @"type": @"shouldStart",
-                                           @"navigationType": [NSNumber numberWithInt:navigationAction.navigationType],
-                                           }];
+    _isFirstNavigation = NO;
+
+    data[@"type"] = @"shouldStart";
+    data[@"navigationType"] = @(navigationAction.navigationType);
+
     [channel invokeMethod:@"onState" arguments:data];
 
     if (navigationAction.navigationType == WKNavigationTypeBackForward) {
