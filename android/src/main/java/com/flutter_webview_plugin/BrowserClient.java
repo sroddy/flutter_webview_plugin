@@ -57,6 +57,10 @@ public class BrowserClient extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("url", url);
+        data.put("willNavigate", !disableNavigation);
+        FlutterWebviewPlugin.channel.invokeMethod("onNavigationAttempt", data);
         return disableNavigation;
     }
 }

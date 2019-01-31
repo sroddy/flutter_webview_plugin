@@ -255,14 +255,20 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 #pragma mark -- WkWebView Delegate
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    NSDictionary *data = @{
+                           @"url": navigationAction.request.URL.absoluteString,
+                           @"willNavigate": @(!_disableNavigation),
+                           };
+    [channel invokeMethod:@"onNavigationAttempt" arguments:data];
     if (_disableNavigation) {
         decisionHandler(WKNavigationActionPolicyCancel);
         return;
     }
 
-    id data = @{@"url": navigationAction.request.URL.absoluteString,
-                @"type": @"shouldStart",
-                @"navigationType": [NSNumber numberWithInt:navigationAction.navigationType]};
+    [data setValuesForKeysWithDictionary:@{
+                                           @"type": @"shouldStart",
+                                           @"navigationType": [NSNumber numberWithInt:navigationAction.navigationType],
+                                           }];
     [channel invokeMethod:@"onState" arguments:data];
 
     if (navigationAction.navigationType == WKNavigationTypeBackForward) {

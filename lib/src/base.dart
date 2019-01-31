@@ -30,6 +30,7 @@ class FlutterWebviewPlugin {
   final _onScrollXChanged = StreamController<double>.broadcast();
   final _onScrollYChanged = StreamController<double>.broadcast();
   final _onHttpError = StreamController<WebViewHttpError>.broadcast();
+  final _onNavigationAttempt = StreamController<dynamic>.broadcast();
 
   Future<Null> _handleMessages(MethodCall call) async {
     switch (call.method) {
@@ -37,18 +38,22 @@ class FlutterWebviewPlugin {
         _onDestroy.add(null);
         break;
       case 'onUrlChanged':
-        _onUrlChanged.add(call.arguments['url']);
+        String url = call.arguments['url'];
+        _onUrlChanged.add(url);
         break;
       case 'onScrollXChanged':
-        _onScrollXChanged.add(call.arguments['xDirection']);
+        double xDirection = call.arguments['xDirection'];
+        _onScrollXChanged.add(xDirection);
         break;
       case 'onScrollYChanged':
-        _onScrollYChanged.add(call.arguments['yDirection']);
+        double yDirection = call.arguments['yDirection'];
+        _onScrollYChanged.add(yDirection);
         break;
       case 'onState':
+        Map<String, dynamic> args = call.arguments;
         _onStateChanged.add(
           WebViewStateChanged.fromMap(
-            Map<String, dynamic>.from(call.arguments),
+            Map<String, dynamic>.from(args),
           ),
         );
         break;
@@ -56,7 +61,12 @@ class FlutterWebviewPlugin {
         _onJsMessage.add(call.arguments);
         break;
       case 'onHttpError':
-        _onHttpError.add(WebViewHttpError(call.arguments['code'], call.arguments['url']));
+        String code = call.arguments['code'];
+        String url = call.arguments['url'];
+        _onHttpError.add(WebViewHttpError(code, url));
+        break;
+      case 'onNavigationAttempt':
+        _onNavigationAttempt.add(call.arguments);
         break;
     }
   }
@@ -81,6 +91,8 @@ class FlutterWebviewPlugin {
   Stream<double> get onScrollXChanged => _onScrollXChanged.stream;
 
   Stream<WebViewHttpError> get onHttpError => _onHttpError.stream;
+
+  Stream<dynamic> get onNavigationAttempt => _onNavigationAttempt.stream;
 
   /// Start the Webview with [url]
   /// - [headers] specify additional HTTP headers
@@ -154,7 +166,7 @@ class FlutterWebviewPlugin {
 
   /// Execute Javascript inside webview
   Future<String> evalJavascript(String code) async {
-    final res = await _channel.invokeMethod('eval', {'code': code});
+    final String res = await _channel.invokeMethod('eval', {'code': code});
     return res;
   }
 
@@ -198,6 +210,7 @@ class FlutterWebviewPlugin {
     _onScrollXChanged.close();
     _onScrollYChanged.close();
     _onHttpError.close();
+    _onNavigationAttempt.close();
     _instance = null;
   }
 
