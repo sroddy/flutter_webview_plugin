@@ -44,8 +44,10 @@ public class BrowserClient extends WebViewClient {
     public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
         super.onReceivedHttpError(view, request, errorResponse);
         Map<String, Object> data = new HashMap<>();
-        data.put("url", request.getUrl().toString());
-        data.put("code", Integer.toString(errorResponse.getStatusCode()));
+        if(Build.VERSION.SDK_INT >= 21) {
+            data.put("url", request.getUrl().toString());
+            data.put("code", Integer.toString(errorResponse.getStatusCode()));
+        }
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
     }
 
