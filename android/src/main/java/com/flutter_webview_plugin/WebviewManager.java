@@ -86,24 +86,24 @@ class WebviewManager {
         this.activity = activity;
         this.resultHandler = new ResultHandler();
         WebViewClient webViewClient = new BrowserClient(disableNavigation);
-        webView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_BACK:
-                            if (webView.canGoBack()) {
-                                webView.goBack();
-                            } else {
-                                close();
-                            }
-                            return true;
-                    }
-                }
-
-                return false;
-            }
-        });
+//        webView.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+//                    switch (keyCode) {
+//                        case KeyEvent.KEYCODE_BACK:
+//                            if (webView.canGoBack()) {
+//                                webView.goBack();
+//                            } else {
+//                                close();
+//                            }
+//                            return true;
+//                    }
+//                }
+//
+//                return false;
+//            }
+//        });
 
         ((ObservableWebView) webView).setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback(){
             public void onScroll(int x, int y, int oldx, int oldy){
