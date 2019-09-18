@@ -194,7 +194,7 @@ class WebviewManager {
             WebView.setWebContentsDebuggingEnabled(true);
             webView.addJavascriptInterface(new Object() {
                 @JavascriptInterface
-                public void postMessage(String message) {
+                public void postMessage(final String message) {
                     System.out.println(message);
                     final Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
