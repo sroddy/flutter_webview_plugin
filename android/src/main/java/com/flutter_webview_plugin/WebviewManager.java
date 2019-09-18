@@ -194,7 +194,13 @@ class WebviewManager {
                 @JavascriptInterface
                 public void postMessage(String message) {
                     System.out.println(message);
-                    FlutterWebviewPlugin.channel.invokeMethod("onJsMessage", message);
+                    final Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            FlutterWebviewPlugin.channel.invokeMethod("onJsMessage", message);
+                        }
+                    });
                 }
             }, MESSAGE_HANDLER);
         }
